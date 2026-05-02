@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IMC Calculator</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0d2b1a 0%, #145a32 50%, #1e8449 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      padding: 20px;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 24px;
+      padding: 40px;
+      width: 100%;
+      max-width: 460px;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+
+    .header .icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+      display: block;
+    }
+
+    .header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.5px;
+    }
+
+    .header p {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 14px;
+      margin-top: 6px;
+    }
+
+    .unit-toggle {
+      display: flex;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 28px;
+    }
+
+    .unit-toggle button {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 9px;
+      background: transparent;
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .unit-toggle button.active {
+      background: linear-gradient(135deg, #f5c518, #e6a800);
+      color: #1a1a1a;
+      box-shadow: 0 4px 12px rgba(245, 197, 24, 0.4);
+    }
+
+    .field {
+      margin-bottom: 20px;
+    }
+
+    .field label {
+      display: block;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 10px;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .field input {
+      width: 100%;
+      padding: 14px 56px 14px 18px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1.5px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      color: #fff;
+      font-size: 18px;
+      font-weight: 600;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+      -moz-appearance: textfield;
+    }
+
+    .field input::-webkit-outer-spin-button,
+    .field input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+    }
+
+    .field input:focus {
+      border-color: #f5c518;
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .field input::placeholder {
+      color: rgba(255, 255, 255, 0.2);
+      font-weight: 400;
+    }
+
+    .unit-label {
+      position: absolute;
+      right: 16px;
+      color: rgba(255, 255, 255, 0.4);
+      font-size: 14px;
+      font-weight: 600;
+      pointer-events: none;
+    }
+
+    .calculate-btn {
+      width: 100%;
+      padding: 16px;
+      margin-top: 8px;
+      background: linear-gradient(135deg, #f5c518, #e6a800);
+      border: none;
+      border-radius: 14px;
+      color: #1a1a1a;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.5px;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      box-shadow: 0 6px 20px rgba(245, 197, 24, 0.35);
+    }
+
+    .calculate-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 28px rgba(245, 197, 24, 0.5);
+    }
+
+    .calculate-btn:active {
+      transform: translateY(0);
+    }
+
+    .result {
+      margin-top: 32px;
+      display: none;
+      animation: fadeInUp 0.4s ease;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .result-score {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .result-score .value {
+      font-size: 72px;
+      font-weight: 800;
+      line-height: 1;
+      background: linear-gradient(135deg, #f5c518, #e6a800);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .result-score .label {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.4);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 4px;
+    }
+
+    .result-badge {
+      display: inline-block;
+      padding: 8px 20px;
+      border-radius: 50px;
+      font-size: 15px;
+      font-weight: 700;
+      margin-top: 10px;
+      letter-spacing: 0.3px;
+    }
+
+    .scale {
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .scale-row {
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      transition: background 0.2s;
+    }
+
+    .scale-row:not(:last-child) {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .scale-row.active {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: 12px;
+      flex-shrink: 0;
+    }
+
+    .scale-name {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 14px;
+      flex: 1;
+    }
+
+    .scale-range {
+      color: rgba(255, 255, 255, 0.4);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .scale-row.active .scale-name {
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .divider {
+      height: 1px;
+      background: rgba(255, 255, 255, 0.08);
+      margin: 24px 0;
+    }
+
+    .error-msg {
+      color: #e94560;
+      font-size: 13px;
+      margin-top: 8px;
+      display: none;
+      padding: 10px 14px;
+      background: rgba(233, 69, 96, 0.1);
+      border-radius: 10px;
+      border: 1px solid rgba(233, 69, 96, 0.2);
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <span class="icon">⚖️</span>
+      <h1>IMC Calculator</h1>
+      <p>Body Mass Index</p>
+    </div>
+
+    <div class="unit-toggle">
+      <button class="active" onclick="setUnit('metric')">Metric (kg / cm)</button>
+      <button onclick="setUnit('imperial')">Imperial (lb / in)</button>
+    </div>
+
+    <div class="field">
+      <label>Weight</label>
+      <div class="input-wrapper">
+        <input type="number" id="weight" placeholder="0" min="1" />
+        <span class="unit-label" id="weight-unit">kg</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Height</label>
+      <div class="input-wrapper">
+        <input type="number" id="height" placeholder="0" min="1" />
+        <span class="unit-label" id="height-unit">cm</span>
+      </div>
+    </div>
+
+    <div class="error-msg" id="error">Please enter valid weight and height values.</div>
+
+    <button class="calculate-btn" onclick="calculate()">Calculate IMC</button>
+
+    <div class="result" id="result">
+      <div class="divider"></div>
+
+      <div class="result-score">
+        <div class="value" id="imc-value">—</div>
+        <div class="label">Your IMC</div>
+        <span class="result-badge" id="imc-badge">—</span>
+      </div>
+
+      <div class="scale" id="scale">
+        <div class="scale-row" data-min="0"   data-max="18.5" id="row-underweight">
+          <div class="dot" style="background:#58b4ff"></div>
+          <span class="scale-name">Underweight</span>
+          <span class="scale-range">&lt; 18.5</span>
+        </div>
+        <div class="scale-row" data-min="18.5" data-max="25" id="row-normal">
+          <div class="dot" style="background:#4cd964"></div>
+          <span class="scale-name">Normal weight</span>
+          <span class="scale-range">18.5 – 24.9</span>
+        </div>
+        <div class="scale-row" data-min="25" data-max="30" id="row-overweight">
+          <div class="dot" style="background:#f5a623"></div>
+          <span class="scale-name">Overweight</span>
+          <span class="scale-range">25 – 29.9</span>
+        </div>
+        <div class="scale-row" data-min="30" data-max="35" id="row-obese1">
+          <div class="dot" style="background:#ff6b35"></div>
+          <span class="scale-name">Obese class I</span>
+          <span class="scale-range">30 – 34.9</span>
+        </div>
+        <div class="scale-row" data-min="35" data-max="40" id="row-obese2">
+          <div class="dot" style="background:#e94560"></div>
+          <span class="scale-name">Obese class II</span>
+          <span class="scale-range">35 – 39.9</span>
+        </div>
+        <div class="scale-row" data-min="40" data-max="999" id="row-obese3">
+          <div class="dot" style="background:#9b1d3c"></div>
+          <span class="scale-name">Obese class III</span>
+          <span class="scale-range">&ge; 40</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let unit = 'metric';
+
+    function setUnit(u) {
+      unit = u;
+      const btns = document.querySelectorAll('.unit-toggle button');
+      btns[0].classList.toggle('active', u === 'metric');
+      btns[1].classList.toggle('active', u === 'imperial');
+      document.getElementById('weight-unit').textContent = u === 'metric' ? 'kg' : 'lb';
+      document.getElementById('height-unit').textContent = u === 'metric' ? 'cm' : 'in';
+      document.getElementById('result').style.display = 'none';
+      document.getElementById('weight').value = '';
+      document.getElementById('height').value = '';
+    }
+
+    function calculate() {
+      const w = parseFloat(document.getElementById('weight').value);
+      const h = parseFloat(document.getElementById('height').value);
+      const err = document.getElementById('error');
+
+      if (!w || !h || w <= 0 || h <= 0) {
+        err.style.display = 'block';
+        document.getElementById('result').style.display = 'none';
+        return;
+      }
+      err.style.display = 'none';
+
+      let imc;
+      if (unit === 'metric') {
+        const hm = h / 100;
+        imc = w / (hm * hm);
+      } else {
+        imc = (703 * w) / (h * h);
+      }
+
+      const rounded = Math.round(imc * 10) / 10;
+
+      const categories = [
+        { id: 'row-underweight', max: 18.5, label: 'Underweight',   color: '#58b4ff' },
+        { id: 'row-normal',      max: 25,   label: 'Normal weight', color: '#4cd964' },
+        { id: 'row-overweight',  max: 30,   label: 'Overweight',    color: '#f5a623' },
+        { id: 'row-obese1',      max: 35,   label: 'Obese I',       color: '#ff6b35' },
+        { id: 'row-obese2',      max: 40,   label: 'Obese II',      color: '#e94560' },
+        { id: 'row-obese3',      max: Infinity, label: 'Obese III', color: '#9b1d3c' },
+      ];
+
+      let matched = categories[categories.length - 1];
+      for (const cat of categories) {
+        if (imc < cat.max) { matched = cat; break; }
+      }
+
+      document.getElementById('imc-value').textContent = rounded.toFixed(1);
+
+      const badge = document.getElementById('imc-badge');
+      badge.textContent = matched.label;
+      badge.style.background = matched.color + '30';
+      badge.style.color = matched.color;
+      badge.style.border = `1.5px solid ${matched.color}60`;
+
+      document.querySelectorAll('.scale-row').forEach(row => row.classList.remove('active'));
+      document.getElementById(matched.id).classList.add('active');
+
+      const resultEl = document.getElementById('result');
+      resultEl.style.display = 'none';
+      void resultEl.offsetWidth;
+      resultEl.style.display = 'block';
+    }
+
+    document.querySelectorAll('input').forEach(input => {
+      input.addEventListener('keydown', e => { if (e.key === 'Enter') calculate(); });
+    });
+  </script>
+</body>
+</html>
